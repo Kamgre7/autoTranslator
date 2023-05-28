@@ -1,7 +1,7 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 import { config } from './config/default';
-import { translate } from './routes/translate';
+import { translate } from './routes/translateRoute';
 
 dotenv.config();
 
