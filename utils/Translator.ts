@@ -6,11 +6,9 @@ export interface ITranslator {
   translateText(text: string, targetLanguage: string): Promise<string>;
 }
 
-const CREDENTIALS = config.googleCloud;
-
 const translate = new Translate({
-  credentials: CREDENTIALS,
-  projectId: CREDENTIALS.project_id,
+  credentials: config.googleCloud,
+  projectId: config.googleCloud.project_id,
 });
 
 export class Translator implements ITranslator {
@@ -20,7 +18,7 @@ export class Translator implements ITranslator {
 
       return detectResult.language;
     } catch (err) {
-      console.error((err as Error).message);
+      throw new Error((err as Error).message);
     }
   }
 
@@ -30,7 +28,7 @@ export class Translator implements ITranslator {
 
       return response;
     } catch (err) {
-      console.error((err as Error).message);
+      throw new Error((err as Error).message);
     }
   }
 }
