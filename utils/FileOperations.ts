@@ -1,8 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { config } from '../config/default';
-
-export type cachedPhrases = [string, string][];
-export type cachedFile = Record<string, cachedPhrases>;
+import { cachedFile } from './CacheTranslator';
 
 export interface IFileOperations {
   readFile(): Promise<cachedFile>;
