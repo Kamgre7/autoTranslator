@@ -1,6 +1,6 @@
 import { fileOperations } from '../utils/FileOperations';
 import { CacheTranslator } from '../utils/CacheTranslator';
-import { ITranslator, Translator } from '../utils/Translator';
+import { ITranslator, translator } from '../utils/Translator';
 
 export interface ITranslateService {
   translate(
@@ -47,4 +47,4 @@ export class TranslateService implements ITranslateService {
   }
 }
 
-export const translateService = new TranslateService(new Translator());
+export const translateService = new TranslateService(translator);
