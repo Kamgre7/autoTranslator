@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { translateController } from '../controllers/TranslateController';
 
-export const translate = Router();
+export const translateRouter = Router();
 
-translate.post('/', translateController.postTranslate);
+translateRouter.post('/', translateController.postTranslate);
