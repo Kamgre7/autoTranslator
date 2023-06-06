@@ -4,8 +4,12 @@ import {
   translateService,
 } from '../services/TranslateService';
 
+export type objectToTranslate = {
+  [key: string]: string;
+};
+
 export type reqBody = {
-  text: string;
+  textObj: objectToTranslate;
   targetLanguage: string;
   fromLanguage?: string;
 };
@@ -18,12 +22,12 @@ export class TranslateController implements ITranslateController {
   constructor(private readonly translateService: ITranslateService) {}
 
   postTranslate = async (req: Request, res: Response): Promise<void> => {
-    const { text, targetLanguage, fromLanguage }: reqBody = req.body;
+    const { textObj, targetLanguage, fromLanguage }: reqBody = req.body;
 
     const from = fromLanguage ?? null;
 
     const result = await this.translateService.translate(
-      text,
+      textObj,
       targetLanguage,
       from
     );
