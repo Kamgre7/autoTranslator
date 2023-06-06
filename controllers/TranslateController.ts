@@ -8,7 +8,7 @@ export type objectToTranslate = {
   [key: string]: string;
 };
 
-export type reqBody = {
+export type postReqBody = {
   textObj: objectToTranslate;
   targetLanguage: string;
   fromLanguage?: string;
@@ -22,7 +22,7 @@ export class TranslateController implements ITranslateController {
   constructor(private readonly translateService: ITranslateService) {}
 
   postTranslate = async (req: Request, res: Response): Promise<void> => {
-    const { textObj, targetLanguage, fromLanguage }: reqBody = req.body;
+    const { textObj, targetLanguage, fromLanguage }: postReqBody = req.body;
 
     const from = fromLanguage ?? null;
 
