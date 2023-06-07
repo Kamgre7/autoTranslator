@@ -6,7 +6,6 @@ export interface ICacheTranslator {
 
   findAllPhrasesByLanguages(fromToTargetShortcut: string): cachedPhrases;
   findPhrase(fromToTargetShortcut: string, text: string): string | null;
-  createNewCategory(fromToTargetShortcut: string): void;
   addPhrase(
     text: string,
     translatedText: string,
@@ -36,15 +35,15 @@ export class CacheTranslator implements ICacheTranslator {
     return null;
   }
 
-  createNewCategory(fromToTargetShortcut: string): void {
-    this.data[fromToTargetShortcut] = [];
-  }
-
   addPhrase(
     text: string,
     translatedText: string,
     fromToTargetShortcut: string
   ): void {
     this.data[fromToTargetShortcut].push([text, translatedText]);
+  }
+
+  private createNewCategory(fromToTargetShortcut: string): void {
+    this.data[fromToTargetShortcut] = [];
   }
 }
