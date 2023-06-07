@@ -1,48 +1,94 @@
-import { fileOperations } from '../utils/FileOperations';
-import { CacheTranslator } from '../utils/CacheTranslator';
+import { fileHandler } from '../utils/FileHandler';
+import {
+  CacheTranslator,
+  cachedFile,
+  cachedPhrases,
+} from '../utils/CacheTranslator';
 import { ITranslator, translator } from '../utils/Translator';
+import { objectToTranslate } from '../controllers/TranslateController';
+import { convertArrayToObject } from '../utils/convertArrayToObj';
 
 export interface ITranslateService {
   translate(
-    text: string,
+    textObj: objectToTranslate,
     targetLanguage: string,
     fromLanguage: string | null
-  ): Promise<string>;
+  ): Promise<objectToTranslate>;
 }
 
 export class TranslateService implements ITranslateService {
   constructor(private readonly translator: ITranslator) {}
 
   async translate(
-    text: string,
+    textObj: objectToTranslate,
     targetLanguage: string,
     fromLanguage: string | null
+  ): Promise<objectToTranslate> {
+    const translateKeyValue = Object.entries(textObj);
+    const firstSentenceToDetectLanguage = translateKeyValue[0][1];
+
+    const from = await this.findLanguageFrom(
+      fromLanguage,
+      firstSentenceToDetectLanguage
+    );
+
+    const fromToTargetShortcut = `${from}-${targetLanguage}`;
+
+    await fileHandler.createCacheDirectoryIfNotExist();
+
+    const cacheFileData = await this.readCacheFileOrCreate(
+      fromToTargetShortcut
+    );
+
+    const cacheTranslator = new CacheTranslator(cacheFileData);
+
+    const translatedPhrases: cachedPhrases = await Promise.all(
+      translateKeyValue.map(async ([key, text]) => {
+        const phrase = cacheTranslator.findPhrase(fromToTargetShortcut, text);
+
+        if (phrase) {
+          return [key, phrase];
+        }
+
+        const translatePhrase = await this.translator.translateText(
+          text,
+          targetLanguage
+        );
+
+        cacheTranslator.addPhrase(text, translatePhrase, fromToTargetShortcut);
+
+        return [key, translatePhrase];
+      })
+    );
+
+    await fileHandler.writeFile(cacheTranslator.data, fromToTargetShortcut);
+
+    const translatedResult = convertArrayToObject(translatedPhrases);
+
+    return translatedResult;
+  }
+
+  private async findLanguageFrom(
+    fromReqBody: string | null,
+    firstSentence: string
   ): Promise<string> {
+    return fromReqBody
+      ? fromReqBody
+      : await this.translator.detectLanguage(firstSentence);
+  }
+
+  private async readCacheFileOrCreate(
+    fromToTargetShortcut: string
+  ): Promise<cachedFile> {
     try {
-      const from = fromLanguage ?? (await this.translator.detectLanguage(text));
-      const fromToTargetShortcut = `${from}-${targetLanguage}`;
+      return await fileHandler.readFile(fromToTargetShortcut);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        await fileHandler.writeFile({}, fromToTargetShortcut);
 
-      const cacheFileData = await fileOperations.readFile();
-      const cacheTranslator = new CacheTranslator(cacheFileData);
-
-      const phrase = cacheTranslator.findPhrase(fromToTargetShortcut, text);
-
-      if (phrase) {
-        return phrase;
+        return {};
       }
-
-      const translatePhrase = await this.translator.translateText(
-        text,
-        targetLanguage
-      );
-
-      cacheTranslator.addPhrase(text, translatePhrase, fromToTargetShortcut);
-
-      await fileOperations.writeFile(cacheTranslator.data);
-
-      return translatePhrase;
-    } catch (err) {
-      throw new Error((err as Error).message);
+      throw new Error((error as Error).message);
     }
   }
 }
