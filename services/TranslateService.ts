@@ -5,25 +5,25 @@ import {
   cachedPhrases,
 } from '../utils/CacheTranslator';
 import { ITranslator, translator } from '../utils/Translator';
-import { objectToTranslate } from '../controllers/TranslateController';
+import { ObjectToTranslate } from '../controllers/TranslateController';
 import { convertArrayToObject } from '../utils/convertArrayToObj';
 
 export interface ITranslateService {
   translate(
-    textObj: objectToTranslate,
+    textObj: ObjectToTranslate,
     targetLanguage: string,
     fromLanguage: string | null
-  ): Promise<objectToTranslate>;
+  ): Promise<ObjectToTranslate>;
 }
 
 export class TranslateService implements ITranslateService {
   constructor(private readonly translator: ITranslator) {}
 
   async translate(
-    textObj: objectToTranslate,
+    textObj: ObjectToTranslate,
     targetLanguage: string,
     fromLanguage: string | null
-  ): Promise<objectToTranslate> {
+  ): Promise<ObjectToTranslate> {
     const translateKeyValue = Object.entries(textObj);
     const firstSentenceToDetectLanguage = translateKeyValue[0][1];
 
@@ -63,9 +63,7 @@ export class TranslateService implements ITranslateService {
 
     await fileHandler.writeFile(cacheTranslator.data, fromToTargetShortcut);
 
-    const translatedResult = convertArrayToObject(translatedPhrases);
-
-    return translatedResult;
+    return convertArrayToObject(translatedPhrases);
   }
 
   private async findLanguageFrom(
