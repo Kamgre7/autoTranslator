@@ -3,15 +3,10 @@ import {
   ITranslateService,
   translateService,
 } from '../services/TranslateService';
+import { PostReqBody } from '../models/postReqBodySchema';
 
-export type objectToTranslate = {
+export type ObjectToTranslate = {
   [key: string]: string;
-};
-
-export type postReqBody = {
-  textObj: objectToTranslate;
-  targetLanguage: string;
-  fromLanguage?: string;
 };
 
 export interface ITranslateController {
@@ -22,7 +17,7 @@ export class TranslateController implements ITranslateController {
   constructor(private readonly translateService: ITranslateService) {}
 
   postTranslate = async (req: Request, res: Response): Promise<void> => {
-    const { textObj, targetLanguage, fromLanguage }: postReqBody = req.body;
+    const { textObj, targetLanguage, fromLanguage }: PostReqBody = req.body;
 
     const from = fromLanguage ?? null;
 
