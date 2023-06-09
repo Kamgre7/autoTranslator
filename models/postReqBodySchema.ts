@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const postReqBodySchema = z
+export const PostReqBodySchema = z
   .object({
     textObj: z.record(z.string(), z.string()),
     targetLanguage: z.string(),
@@ -8,8 +8,8 @@ export const postReqBodySchema = z
   })
   .strict();
 
-export const reqBodyOptionalFromLanguage = postReqBodySchema.partial({
+export const ReqBodyOptionalFromLanguage = PostReqBodySchema.partial({
   fromLanguage: true,
 });
 
-export type PostReqBody = z.infer<typeof reqBodyOptionalFromLanguage>;
+export type PostReqBody = z.infer<typeof ReqBodyOptionalFromLanguage>;

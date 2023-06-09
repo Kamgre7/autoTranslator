@@ -1,4 +1,4 @@
 import { validate } from '../middlewares/validate';
-import { reqBodyOptionalFromLanguage } from './postReqBodySchema';
+import { ReqBodyOptionalFromLanguage } from './postReqBodySchema';
 
-export const validatePostReqBody = validate(reqBodyOptionalFromLanguage);
+export const validatePostReqBody = validate(ReqBodyOptionalFromLanguage);
