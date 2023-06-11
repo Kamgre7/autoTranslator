@@ -1,7 +1,7 @@
 export type cachedPhrases = [string, string][];
 export type cachedFile = Record<string, cachedPhrases>;
 
-export interface ICacheTranslator {
+export interface ICacheHandler {
   data: cachedFile;
 
   findAllPhrasesByLanguages(fromToTargetShortcut: string): cachedPhrases;
@@ -13,7 +13,7 @@ export interface ICacheTranslator {
   ): void;
 }
 
-export class CacheTranslator implements ICacheTranslator {
+export class CacheHandler implements ICacheHandler {
   constructor(public readonly data: cachedFile) {}
 
   findAllPhrasesByLanguages(fromToTargetShortcut: string): cachedPhrases {
