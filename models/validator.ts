@@ -1,4 +1,4 @@
 import { validate } from '../middlewares/validate';
-import { PostReqBodySchema } from './postReqBodySchema';
+import { PostTranslateSchema } from './postTranslateSchema';
 
-export const validatePostReqBody = validate(PostReqBodySchema);
+export const validatePostReqBody = validate(PostTranslateSchema);
