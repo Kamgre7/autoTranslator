@@ -1,9 +1,5 @@
 import { fileHandler } from '../utils/FileHandler';
-import {
-  CacheTranslator,
-  cachedFile,
-  cachedPhrases,
-} from '../utils/CacheTranslator';
+import { CacheHandler, cachedFile, cachedPhrases } from '../utils/CacheHandler';
 import { ITranslator, translator } from '../utils/Translator';
 import { ObjectToTranslate } from '../controllers/TranslateController';
 import { convertArrayToObject } from '../utils/convertArrayToObj';
@@ -24,27 +20,38 @@ export class TranslateService implements ITranslateService {
     targetLanguage: string,
     fromLanguage: string | null
   ): Promise<ObjectToTranslate> {
-    const translateKeyValue = Object.entries(textObj);
-    const firstSentenceToDetectLanguage = translateKeyValue[0][1];
+    const translateKeyValuePairs = Object.entries(textObj);
+    const firstSentenceToDetectLanguage = translateKeyValuePairs[0][1];
 
     const from = await this.findLanguageFrom(
       fromLanguage,
       firstSentenceToDetectLanguage
     );
 
-    const fromToTargetShortcut = `${from}-${targetLanguage}`;
+    const fromToShortcut = `${from}-${targetLanguage}`;
 
-    await fileHandler.createCacheDirectoryIfNotExist();
+    const cacheFileData = await this.readCacheFileOrCreate(fromToShortcut);
 
-    const cacheFileData = await this.readCacheFileOrCreate(
-      fromToTargetShortcut
+    const cacheHandler = new CacheHandler(cacheFileData);
+
+    const isEveryPhraseInCache = translateKeyValuePairs.every(([key, text]) =>
+      cacheHandler.findPhrase(fromToShortcut, text)
     );
 
-    const cacheTranslator = new CacheTranslator(cacheFileData);
+    if (isEveryPhraseInCache) {
+      const mappedPhrases: cachedPhrases = translateKeyValuePairs.map(
+        ([key, text]) => [
+          key,
+          cacheHandler.findPhrase(fromToShortcut, text) as string,
+        ]
+      );
+
+      return convertArrayToObject(mappedPhrases);
+    }
 
     const translatedPhrases: cachedPhrases = await Promise.all(
-      translateKeyValue.map(async ([key, text]) => {
-        const phrase = cacheTranslator.findPhrase(fromToTargetShortcut, text);
+      translateKeyValuePairs.map(async ([key, text]) => {
+        const phrase = cacheHandler.findPhrase(fromToShortcut, text);
 
         if (phrase) {
           return [key, phrase];
@@ -55,13 +62,13 @@ export class TranslateService implements ITranslateService {
           targetLanguage
         );
 
-        cacheTranslator.addPhrase(text, translatePhrase, fromToTargetShortcut);
+        cacheHandler.addPhrase(text, translatePhrase, fromToShortcut);
 
         return [key, translatePhrase];
       })
     );
 
-    await fileHandler.writeFile(cacheTranslator.data, fromToTargetShortcut);
+    await fileHandler.writeFile(cacheHandler.data, fromToShortcut);
 
     return convertArrayToObject(translatedPhrases);
   }
@@ -82,6 +89,8 @@ export class TranslateService implements ITranslateService {
       return await fileHandler.readFile(fromToTargetShortcut);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        await fileHandler.createCacheDirectoryIfNotExist();
+
         await fileHandler.writeFile({}, fromToTargetShortcut);
 
         return {};
