@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { config } from '../config/default';
-import { cachedFile } from './CacheTranslator';
+import { cachedFile } from './CacheHandler';
 import { join } from 'node:path';
 
 export interface IFileHandler {
@@ -11,16 +11,20 @@ export interface IFileHandler {
 
 export class FileHandler implements IFileHandler {
   async readFile(fromToTargetShortcut: string): Promise<cachedFile> {
-    const file = await readFile(
+    const fileData = await readFile(
       join(config.cacheFilePath, `${fromToTargetShortcut}.json`),
       {
         encoding: 'utf-8',
       }
     );
 
-    const parsedFile: cachedFile = JSON.parse(file);
+    try {
+      const parsedFileData: cachedFile = JSON.parse(fileData);
 
-    return parsedFile;
+      return parsedFileData;
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
   }
 
   async writeFile(
@@ -29,7 +33,7 @@ export class FileHandler implements IFileHandler {
   ): Promise<void> {
     try {
       await writeFile(
-        `${config.cacheFilePath}/${fromToTargetShortcut}.json`,
+        join(config.cacheFilePath, `${fromToTargetShortcut}.json`),
         JSON.stringify(data)
       );
     } catch (error) {
