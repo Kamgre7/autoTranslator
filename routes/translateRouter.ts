@@ -5,5 +5,5 @@ import { validatePostReqBody } from '../models/validator';
 export const translateRouter = Router();
 
 translateRouter
-  .route('/')
+  .route('/translate')
   .post(validatePostReqBody, translateController.postTranslate);
