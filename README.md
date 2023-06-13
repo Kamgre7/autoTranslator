@@ -20,7 +20,7 @@ Before starting, you need to have Git and Node installed.
 $ git clone https://github.com/Kamgre7/autoTranslator.git
 
 # Go to the project directory
-$ cd e-commerce-shop-back
+$ cd autoTranslate
 
 # Install dependencies
 $ npm install
