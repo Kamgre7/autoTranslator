@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { translateController } from '../controllers/TranslateController';
-import { validatePostReqBody } from '../models/validator';
+import { validateTranslatePostReq } from '../validators/translatePostReq';
 
 export const translateRouter = Router();
 
 translateRouter
   .route('/translate')
-  .post(validatePostReqBody, translateController.postTranslate);
+  .post(validateTranslatePostReq, translateController.postTranslate);
