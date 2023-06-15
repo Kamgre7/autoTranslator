@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { ConfigSchema } from '../models/configSchema';
+import { ConfigSchema } from '../schemas/configSchema';
 dotenv.config();
 
 export const config = ConfigSchema.parse({

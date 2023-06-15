@@ -1,16 +1,16 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { config } from '../config/default';
-import { cachedFile } from './CacheHandler';
+import { CachedFileData } from './CacheHandler';
 import { join } from 'node:path';
 
 export interface IFileHandler {
-  readFile(fromToTargetShortcut: string): Promise<cachedFile>;
-  writeFile(data: cachedFile, fromToTargetShortcut: string): Promise<void>;
+  readFile(fromToTargetShortcut: string): Promise<CachedFileData>;
+  writeFile(data: CachedFileData, fromToTargetShortcut: string): Promise<void>;
   createCacheDirectoryIfNotExist(): Promise<void>;
 }
 
 export class FileHandler implements IFileHandler {
-  async readFile(fromToTargetShortcut: string): Promise<cachedFile> {
+  async readFile(fromToTargetShortcut: string): Promise<CachedFileData> {
     const fileData = await readFile(
       join(config.cacheFilePath, `${fromToTargetShortcut}.json`),
       {
@@ -19,7 +19,7 @@ export class FileHandler implements IFileHandler {
     );
 
     try {
-      const parsedFileData: cachedFile = JSON.parse(fileData);
+      const parsedFileData: CachedFileData = JSON.parse(fileData);
 
       return parsedFileData;
     } catch (err) {
@@ -28,7 +28,7 @@ export class FileHandler implements IFileHandler {
   }
 
   async writeFile(
-    data: cachedFile,
+    data: CachedFileData,
     fromToTargetShortcut: string
   ): Promise<void> {
     try {

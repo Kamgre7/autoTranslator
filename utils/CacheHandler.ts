@@ -1,10 +1,10 @@
-export type cachedPhrases = [string, string][];
-export type cachedFile = Record<string, cachedPhrases>;
+export type CachedPhrases = [string, string][];
+export type CachedFileData = Record<string, CachedPhrases>;
 
 export interface ICacheHandler {
-  data: cachedFile;
+  data: CachedFileData;
 
-  findAllPhrasesByLanguages(fromToTargetShortcut: string): cachedPhrases;
+  findAllPhrasesByLanguages(fromToTargetShortcut: string): CachedPhrases;
   findPhrase(fromToTargetShortcut: string, text: string): string | null;
   addPhrase(
     text: string,
@@ -14,9 +14,9 @@ export interface ICacheHandler {
 }
 
 export class CacheHandler implements ICacheHandler {
-  constructor(public readonly data: cachedFile) {}
+  constructor(public readonly data: CachedFileData) {}
 
-  findAllPhrasesByLanguages(fromToTargetShortcut: string): cachedPhrases {
+  findAllPhrasesByLanguages(fromToTargetShortcut: string): CachedPhrases {
     return this.data[fromToTargetShortcut];
   }
 

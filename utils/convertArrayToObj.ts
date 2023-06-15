@@ -1,7 +1,7 @@
 import { ObjectToTranslate } from '../controllers/TranslateController';
-import { cachedPhrases } from './CacheHandler';
+import { CachedPhrases } from './CacheHandler';
 
-export const convertArrayToObject = (array: cachedPhrases): ObjectToTranslate =>
+export const convertArrayToObject = (array: CachedPhrases): ObjectToTranslate =>
   array.reduce(
     (prev, [key, value]) => ({
       ...prev,

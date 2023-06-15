@@ -3,7 +3,7 @@ import {
   ITranslateService,
   translateService,
 } from '../services/TranslateService';
-import { PostTranslateReq } from '../models/postTranslateSchema';
+import { PostTranslateReq } from '../schemas/postTranslateSchema';
 
 export type ObjectToTranslate = Record<string, string>;
 
@@ -26,7 +26,7 @@ export class TranslateController implements ITranslateController {
       fromLanguage
     );
 
-    res.json(result);
+    res.status(200).json(result);
   };
 }
 
