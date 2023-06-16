@@ -10,8 +10,6 @@ import { ObjectToTranslate } from '../controllers/TranslateController';
 import { convertArrayToObject } from '../utils/convertArrayToObj';
 
 export interface ITranslateService {
-  cacheDataAndToTranslate: SplittedPhrases;
-
   translate(
     textObj: ObjectToTranslate,
     targetLanguage: string,
@@ -19,6 +17,7 @@ export interface ITranslateService {
   ): Promise<ObjectToTranslate>;
 
   translatePhrasesFromApi(
+    data: [string, string][],
     cacheHandler: ICacheHandler,
     targetLanguage: string,
     fromToShortcut: string
@@ -28,7 +27,7 @@ export interface ITranslateService {
     keyValuePairs: [string, string][],
     cacheHandler: ICacheHandler,
     fromToShortcut: string
-  ): void;
+  ): SplittedPhrases;
 }
 
 export type SplittedPhrases = {
@@ -37,11 +36,6 @@ export type SplittedPhrases = {
 };
 
 export class TranslateService implements ITranslateService {
-  cacheDataAndToTranslate: SplittedPhrases = {
-    fromCache: [],
-    toTranslate: [],
-  };
-
   constructor(private readonly translator: ITranslator) {}
 
   async translate(
@@ -63,16 +57,18 @@ export class TranslateService implements ITranslateService {
 
     const cacheHandler = new CacheHandler(cacheFileData);
 
-    this.regroupPhrases(translateKeyValuePairs, cacheHandler, fromToShortcut);
+    const groupedPhrases = this.regroupPhrases(
+      translateKeyValuePairs,
+      cacheHandler,
+      fromToShortcut
+    );
 
-    if (
-      this.cacheDataAndToTranslate.fromCache.length ===
-      translateKeyValuePairs.length
-    ) {
-      return convertArrayToObject(this.cacheDataAndToTranslate.fromCache);
+    if (groupedPhrases.fromCache.length === translateKeyValuePairs.length) {
+      return convertArrayToObject(groupedPhrases.fromCache);
     }
 
     const translatedPhrasesFromApi = await this.translatePhrasesFromApi(
+      groupedPhrases.toTranslate,
       cacheHandler,
       targetLanguage,
       fromToShortcut
@@ -81,11 +77,9 @@ export class TranslateService implements ITranslateService {
     await fileHandler.writeFile(cacheHandler.data, fromToShortcut);
 
     const translateResult = convertArrayToObject([
-      ...this.cacheDataAndToTranslate.fromCache,
+      ...groupedPhrases.fromCache,
       ...translatedPhrasesFromApi,
     ]);
-
-    this.clearTmpData();
 
     return translateResult;
   }
@@ -94,23 +88,31 @@ export class TranslateService implements ITranslateService {
     keyValuePairs: [string, string][],
     cacheHandler: ICacheHandler,
     fromToShortcut: string
-  ): void {
+  ): SplittedPhrases {
+    const cacheDataAndToTranslate: SplittedPhrases = {
+      fromCache: [],
+      toTranslate: [],
+    };
+
     keyValuePairs.forEach(([key, text]) => {
       const phrase = cacheHandler.findPhrase(fromToShortcut, text);
 
       phrase
-        ? this.cacheDataAndToTranslate.fromCache.push([key, phrase])
-        : this.cacheDataAndToTranslate.toTranslate.push([key, text]);
+        ? cacheDataAndToTranslate.fromCache.push([key, phrase])
+        : cacheDataAndToTranslate.toTranslate.push([key, text]);
     });
+
+    return cacheDataAndToTranslate;
   }
 
   async translatePhrasesFromApi(
+    data: [string, string][],
     cacheHandler: ICacheHandler,
     targetLanguage: string,
     fromToShortcut: string
   ): Promise<CachedPhrases> {
     return await Promise.all(
-      this.cacheDataAndToTranslate.toTranslate.map(async ([key, text]) => {
+      data.map(async ([key, text]) => {
         const phrase = await this.translator.translateText(
           text,
           targetLanguage
@@ -147,11 +149,6 @@ export class TranslateService implements ITranslateService {
       }
       throw new Error((error as Error).message);
     }
-  }
-
-  private clearTmpData() {
-    this.cacheDataAndToTranslate.fromCache.length = 0;
-    this.cacheDataAndToTranslate.toTranslate.length = 0;
   }
 }
 
