@@ -76,12 +76,10 @@ export class TranslateService implements ITranslateService {
 
     await fileHandler.writeFile(cacheHandler.data, fromToShortcut);
 
-    const translateResult = convertArrayToObject([
+    return convertArrayToObject([
       ...groupedPhrases.fromCache,
       ...translatedPhrasesFromApi,
     ]);
-
-    return translateResult;
   }
 
   regroupPhrases(
