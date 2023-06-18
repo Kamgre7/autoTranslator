@@ -1,4 +1,4 @@
-import { fileHandler } from '../utils/FileHandler';
+import { IFileHandler, fileHandler } from '../utils/FileHandler';
 import {
   CacheHandler,
   CachedFileData,
@@ -22,12 +22,6 @@ export interface ITranslateService {
     targetLanguage: string,
     fromToShortcut: string
   ): Promise<CachedPhrases>;
-
-  regroupPhrases(
-    keyValuePairs: [string, string][],
-    cacheHandler: ICacheHandler,
-    fromToShortcut: string
-  ): SplittedPhrases;
 }
 
 export type SplittedPhrases = {
@@ -36,7 +30,10 @@ export type SplittedPhrases = {
 };
 
 export class TranslateService implements ITranslateService {
-  constructor(private readonly translator: ITranslator) {}
+  constructor(
+    private readonly translator: ITranslator,
+    private readonly fileHandler: IFileHandler
+  ) {}
 
   async translate(
     textObj: ObjectToTranslate,
@@ -74,7 +71,7 @@ export class TranslateService implements ITranslateService {
       fromToShortcut
     );
 
-    await fileHandler.writeFile(cacheHandler.data, fromToShortcut);
+    await this.fileHandler.writeFile(cacheHandler.data, fromToShortcut);
 
     return convertArrayToObject([
       ...groupedPhrases.fromCache,
@@ -82,7 +79,7 @@ export class TranslateService implements ITranslateService {
     ]);
   }
 
-  regroupPhrases(
+  private regroupPhrases(
     keyValuePairs: [string, string][],
     cacheHandler: ICacheHandler,
     fromToShortcut: string
@@ -136,12 +133,12 @@ export class TranslateService implements ITranslateService {
     fromToTargetShortcut: string
   ): Promise<CachedFileData> {
     try {
-      return await fileHandler.readFile(fromToTargetShortcut);
+      return await this.fileHandler.readFile(fromToTargetShortcut);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        await fileHandler.createCacheDirectoryIfNotExist();
+        await this.fileHandler.createCacheDirectoryIfNotExist();
 
-        await fileHandler.writeFile({}, fromToTargetShortcut);
+        await this.fileHandler.writeFile({}, fromToTargetShortcut);
 
         return {};
       }
@@ -150,4 +147,4 @@ export class TranslateService implements ITranslateService {
   }
 }
 
-export const translateService = new TranslateService(translator);
+export const translateService = new TranslateService(translator, fileHandler);
