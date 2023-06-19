@@ -12,15 +12,16 @@ describe('Translate service', () => {
   let fileHandlerMock: IFileHandler;
   let translateService: ITranslateService;
   let objToTranslate: ObjectToTranslate;
-
-  const translateInstance = new Translate();
-  translateInstance.translate = jest.fn();
+  let translateInstance: Translate;
 
   beforeEach(() => {
     objToTranslate = {
       text1: 'Monday',
       text2: 'Tuesday',
     };
+
+    translateInstance = new Translate();
+    translateInstance.translate = jest.fn();
 
     translatorMock = {
       translate: translateInstance,
