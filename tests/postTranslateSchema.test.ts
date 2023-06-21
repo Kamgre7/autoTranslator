@@ -36,7 +36,7 @@ describe('Post translate schema', () => {
     it('Should return true - all values are string type', () => {
       const dataParse = PostTranslateBody.safeParse(postTranslateBody);
 
-      expect(dataParse.success).toBeTruthy();
+      expect(dataParse.success).toBe(true);
     });
 
     it('Should return false - targetLanguage must be a string', () => {
@@ -44,7 +44,7 @@ describe('Post translate schema', () => {
 
       const dataParse = PostTranslateBody.safeParse(postTranslateBody);
 
-      expect(dataParse.success).toBeFalsy();
+      expect(dataParse.success).toBe(false);
     });
 
     it('Should return false - fromLanguage must be a string or null', () => {
@@ -52,7 +52,7 @@ describe('Post translate schema', () => {
 
       const dataParse = PostTranslateBody.safeParse(postTranslateBody);
 
-      expect(dataParse.success).toBeFalsy();
+      expect(dataParse.success).toBe(false);
     });
 
     it('Should return false - all textObj values must be a string', () => {
@@ -60,7 +60,7 @@ describe('Post translate schema', () => {
 
       const dataParse = PostTranslateBody.safeParse(postTranslateBody);
 
-      expect(dataParse.success).toBeFalsy();
+      expect(dataParse.success).toBe(false);
     });
   });
 
@@ -68,7 +68,7 @@ describe('Post translate schema', () => {
     it('Should return true - body values are string type', () => {
       const dataParse = PostTranslateSchema.safeParse(postTranslate);
 
-      expect(dataParse.success).toBeTruthy();
+      expect(dataParse.success).toBe(true);
     });
 
     it('Should return false - fromLanguage must be string', () => {
@@ -76,7 +76,7 @@ describe('Post translate schema', () => {
 
       const dataParse = PostTranslateSchema.safeParse(postTranslate);
 
-      expect(dataParse.success).toBeFalsy();
+      expect(dataParse.success).toBe(false);
     });
 
     it('Should return false -  body cannot be null', () => {
@@ -86,13 +86,19 @@ describe('Post translate schema', () => {
 
       const dataParse = PostTranslateSchema.safeParse(data);
 
-      expect(dataParse.success).toBeFalsy();
+      expect(dataParse.success).toBe(false);
     });
   });
 
   describe('Should throw error when', () => {
     it('Should throw error when body is missing required keys', () => {
-      delete postTranslate.body.targetLanguage;
+      const postTranslate = {
+        fromLanguage: 'en',
+      };
+
+      expect(() => {
+        PostTranslateSchema.parse(postTranslate);
+      }).toThrow();
 
       expect(() => {
         PostTranslateSchema.parse(postTranslate);
