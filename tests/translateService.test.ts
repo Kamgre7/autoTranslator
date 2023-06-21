@@ -13,7 +13,7 @@ describe('Translate service', () => {
   let translateService: ITranslateService;
   let toTranslate: ObjectToTranslate;
 
-  beforeEach(() => {
+  beforeAll(() => {
     jest.mock('@google-cloud/translate/build/src/v2', () => {
       return {
         Translate: jest.fn().mockImplementation(() => ({
@@ -22,7 +22,9 @@ describe('Translate service', () => {
         })),
       };
     });
+  });
 
+  beforeEach(() => {
     toTranslate = {
       text1: 'Monday',
       text2: 'Tuesday',
@@ -66,7 +68,7 @@ describe('Translate service', () => {
     });
 
     describe('Translator API', () => {
-      it('Should call translator API, when cache data not exist', async () => {
+      it('Should call translator API, when cache data does not exist', async () => {
         await translateService.translate(toTranslate, 'de', 'en');
 
         expect(translatorMock.translateText).toBeCalledTimes(2);
@@ -84,16 +86,26 @@ describe('Translate service', () => {
 
         expect(translatorMock.translateText).not.toBeCalled();
       });
+
+      it('Should call translator API once, when data from cache match only one query', async () => {
+        fileHandlerMock.readFile = jest.fn().mockResolvedValue({
+          'en-de': [['Tuesday', 'Dienstag']],
+        });
+
+        await translateService.translate(toTranslate, 'de', 'en');
+
+        expect(translatorMock.translateText).toBeCalledTimes(1);
+      });
     });
 
     describe('FileHandler', () => {
-      it('Should call readFile', async () => {
+      it('Should call only once readFile', async () => {
         await translateService.translate(toTranslate, 'de', 'en');
 
         expect(fileHandlerMock.readFile).toBeCalledTimes(1);
       });
 
-      it('Should call writeFile', async () => {
+      it('Should call only once writeFile', async () => {
         await translateService.translate(toTranslate, 'de', 'en');
 
         expect(fileHandlerMock.writeFile).toBeCalledTimes(1);
